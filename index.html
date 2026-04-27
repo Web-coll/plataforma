@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FinPilot — Financial Decision OS</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="bg-orb orb-1"></div>
+    <div class="bg-orb orb-2"></div>
+
+    <header class="topbar glass">
+      <div class="brand">
+        <span class="brand-dot"></span>
+        <strong>FinPilot</strong>
+        <span class="tag">Decision OS</span>
+      </div>
+      <div class="topbar-actions">
+        <button class="btn btn-ghost">Modo enfoque</button>
+        <button class="btn btn-primary">Ejecutar plan semanal</button>
+      </div>
+    </header>
+
+    <main class="layout">
+      <section class="hero card glass">
+        <div>
+          <p class="eyebrow">Tu próxima mejor decisión</p>
+          <h1>Paga <span id="nextActionAmount">$180</span> extra a
+            <span id="nextActionDebt">Tarjeta A</span> antes del viernes.</h1>
+          <p class="subtle">
+            Si ejecutas esta acción, adelantas tu fecha de salida de deuda en
+            <strong id="daysGained">12 días</strong>.
+          </p>
+        </div>
+        <button class="btn btn-xl btn-primary" id="executeAction">Ejecutar ahora</button>
+      </section>
+
+      <section class="kpis">
+        <article class="card glass">
+          <h3>Deuda pendiente</h3>
+          <p class="kpi" id="kpiDebt">$12,400</p>
+          <small>-4.6% este mes</small>
+        </article>
+        <article class="card glass">
+          <h3>Fondo de emergencia</h3>
+          <p class="kpi" id="kpiEmergency">1.8 meses</p>
+          <small>Meta: 3 meses</small>
+        </article>
+        <article class="card glass">
+          <h3>Patrimonio neto</h3>
+          <p class="kpi" id="kpiNetWorth">$3,120</p>
+          <small>+11% vs mes anterior</small>
+        </article>
+      </section>
+
+      <section class="grid-two">
+        <article class="card glass">
+          <div class="section-head">
+            <h2>Distribución automática</h2>
+            <span class="pill" id="stagePill">Etapa: Estabilización</span>
+          </div>
+          <div class="donut-wrap">
+            <div class="donut" id="donutChart"></div>
+            <ul class="legend" id="allocationLegend"></ul>
+          </div>
+        </article>
+
+        <article class="card glass">
+          <div class="section-head">
+            <h2>Simulador de resultados</h2>
+            <span class="pill">3 / 6 / 12 meses</span>
+          </div>
+          <div class="controls">
+            <label>Tipo de usuario
+              <select id="userType">
+                <option value="asalariado">Asalariado</option>
+                <option value="estudiante">Estudiante</option>
+                <option value="autonomo">Autónomo</option>
+              </select>
+            </label>
+            <label>Ingreso neto mensual
+              <input id="income" type="number" value="3200" min="300" step="50" />
+            </label>
+            <label>Gastos fijos
+              <input id="fixedCosts" type="number" value="1450" min="100" step="50" />
+            </label>
+            <label>Pago mínimo de deuda
+              <input id="minDebtPayment" type="number" value="280" min="0" step="10" />
+            </label>
+            <label>Deuda total
+              <input id="totalDebt" type="number" value="12400" min="0" step="100" />
+            </label>
+          </div>
+          <button class="btn btn-primary" id="runSimulation">Recalcular plan</button>
+          <div class="projection" id="projectionCards"></div>
+        </article>
+      </section>
+
+      <section class="grid-two">
+        <article class="card glass">
+          <div class="section-head">
+            <h2>Reglas de decisión (motor)</h2>
+            <span class="pill">Si pasa esto → haz esto</span>
+          </div>
+          <ul class="rules" id="rulesList"></ul>
+        </article>
+
+        <article class="card glass">
+          <div class="section-head">
+            <h2>Misiones semanales</h2>
+            <span class="pill" id="streakPill">Racha: 0 semanas</span>
+          </div>
+          <ul class="missions" id="missionsList"></ul>
+        </article>
+      </section>
+
+      <section class="card glass education">
+        <div>
+          <p class="eyebrow">Micro-learning</p>
+          <h2>Aprende en contexto, sin aburrirte</h2>
+          <p class="subtle">
+            "Avalancha" reduce más intereses; "Bola de nieve" mejora adherencia.
+            Tu sistema cambia automáticamente si detecta menor consistencia.
+          </p>
+        </div>
+        <button class="btn btn-ghost">Ver cápsula de 60 segundos</button>
+      </section>
+    </main>
+
+    <template id="projectionTemplate">
+      <article class="projection-card">
+        <h4></h4>
+        <p class="number"></p>
+        <small></small>
+      </article>
+    </template>
+
+    <script src="app.js"></script>
+  </body>
+</html>
