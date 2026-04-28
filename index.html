@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FinPilot — Financial Decision OS</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="bg-orb orb-1"></div>
+    <div class="bg-orb orb-2"></div>
+
+    <section class="onboarding-wrap" id="onboardingWrap">
+      <form class="onboarding card glass" id="onboardingForm">
+        <p class="eyebrow">Paso 1 (obligatorio)</p>
+        <h1>Cuéntame tu base financiera para construir tu plan automático.</h1>
+        <p class="subtle">Primero validamos ingresos, gastos fijos y si tienes deuda. Luego activamos tu dashboard.</p>
+
+        <div class="controls controls-single">
+          <label>Tipo de usuario
+            <select id="onboardUserType" required>
+              <option value="asalariado">Asalariado</option>
+              <option value="estudiante">Estudiante</option>
+              <option value="autonomo">Autónomo</option>
+            </select>
+          </label>
+          <label>Ingreso neto mensual
+            <input id="onboardIncome" type="number" min="300" step="50" value="3200" required />
+          </label>
+          <label>Gastos fijos mensuales
+            <input id="onboardFixedCosts" type="number" min="100" step="50" value="1450" required />
+          </label>
+          <label>¿Tienes deudas?
+            <select id="onboardHasDebt" required>
+              <option value="si">Sí</option>
+              <option value="no">No</option>
+            </select>
+          </label>
+          <label id="onboardDebtTotalWrap">Deuda total
+            <input id="onboardTotalDebt" type="number" min="0" step="100" value="12400" />
+          </label>
+          <label id="onboardDebtMinWrap">Pago mínimo mensual de deuda
+            <input id="onboardMinDebtPayment" type="number" min="0" step="10" value="280" />
+          </label>
+        </div>
+
+        <button type="submit" class="btn btn-xl btn-primary">Generar mi plan</button>
+      </form>
+    </section>
+
+    <header class="topbar glass hidden" id="appHeader">
+      <div class="brand">
+        <span class="brand-dot"></span>
+        <strong>FinPilot</strong>
+        <span class="tag">Decision OS</span>
+      </div>
+      <div class="topbar-actions">
+        <button class="btn btn-ghost">Modo enfoque</button>
+        <button class="btn btn-primary">Ejecutar plan semanal</button>
+      </div>
+    </header>
+
+    <main class="layout hidden" id="appMain">
+      <section class="hero card glass reveal">
+        <div>
+          <p class="eyebrow">Tu próxima mejor decisión</p>
+          <h1>Paga <span id="nextActionAmount">$0</span> extra a
+            <span id="nextActionDebt">deuda prioritaria</span> esta semana.</h1>
+          <p class="subtle">
+            Si ejecutas esta acción, adelantas tu fecha de objetivo en
+            <strong id="daysGained">0 días</strong>.
+          </p>
+        </div>
+        <button class="btn btn-xl btn-primary" id="executeAction">Ejecutar ahora</button>
+      </section>
+
+      <section class="kpis reveal">
+        <article class="card glass">
+          <h3>Deuda pendiente</h3>
+          <p class="kpi" id="kpiDebt">$0</p>
+          <small id="kpiDebtStatus">Sin deuda registrada</small>
+        </article>
+        <article class="card glass">
+          <h3>Fondo de emergencia</h3>
+          <p class="kpi" id="kpiEmergency">0 meses</p>
+          <small>Meta: 3 meses</small>
+        </article>
+        <article class="card glass">
+          <h3>Patrimonio neto proyectado</h3>
+          <p class="kpi" id="kpiNetWorth">$0</p>
+          <small>Proyección a 12 meses</small>
+        </article>
+      </section>
+
+      <section class="grid-two reveal">
+        <article class="card glass">
+          <div class="section-head">
+            <h2>Distribución del ingreso (incluye gastos fijos)</h2>
+            <span class="pill" id="stagePill">Etapa: -</span>
+          </div>
+          <div class="donut-wrap">
+            <div class="donut" id="donutChart"></div>
+            <ul class="legend" id="allocationLegend"></ul>
+          </div>
+        </article>
+
+        <article class="card glass">
+          <div class="section-head">
+            <h2>Simulador de resultados</h2>
+            <span class="pill">3 / 6 / 12 meses</span>
+          </div>
+          <div class="controls">
+            <label>Ingreso neto mensual
+              <input id="income" type="number" min="300" step="50" />
+            </label>
+            <label>Gastos fijos
+              <input id="fixedCosts" type="number" min="100" step="50" />
+            </label>
+            <label>Pago mínimo de deuda
+              <input id="minDebtPayment" type="number" min="0" step="10" />
+            </label>
+            <label>Deuda total
+              <input id="totalDebt" type="number" min="0" step="100" />
+            </label>
+          </div>
+          <button class="btn btn-primary" id="runSimulation">Recalcular plan</button>
+          <div class="projection" id="projectionCards"></div>
+        </article>
+      </section>
+
+      <section class="grid-two reveal">
+        <article class="card glass">
+          <div class="section-head">
+            <h2>Reglas de decisión (motor)</h2>
+            <span class="pill">Si pasa esto → haz esto</span>
+          </div>
+          <ul class="rules" id="rulesList"></ul>
+        </article>
+
+        <article class="card glass">
+          <div class="section-head">
+            <h2>Misiones semanales</h2>
+            <span class="pill" id="streakPill">Racha: 0 semanas</span>
+          </div>
+          <ul class="missions" id="missionsList"></ul>
+        </article>
+      </section>
+    </main>
+
+    <template id="projectionTemplate">
+      <article class="projection-card">
+        <h4></h4>
+        <p class="number"></p>
+        <small></small>
+      </article>
+    </template>
+
+    <script src="app.js"></script>
+  </body>
+</html>
