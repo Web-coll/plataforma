@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Image Sequence Scrubbing Demo</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #08090f;
+        --card: #121526;
+        --accent: #73a1ff;
+        --text: #ecf0ff;
+        --muted: #a2accf;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+        background: radial-gradient(circle at top, #131a35, var(--bg));
+        color: var(--text);
+        display: grid;
+        place-items: center;
+        padding: 1.25rem;
+      }
+
+      .container {
+        width: min(100%, 900px);
+        background: color-mix(in srgb, var(--card) 92%, white 8%);
+        border: 1px solid color-mix(in srgb, var(--accent) 30%, black 70%);
+        border-radius: 16px;
+        padding: 1.25rem;
+        box-shadow: 0 20px 48px rgba(0, 0, 0, 0.35);
+      }
+
+      h1 {
+        font-size: clamp(1.35rem, 2.5vw, 2rem);
+        margin: 0 0 0.4rem;
+      }
+
+      p {
+        margin: 0;
+        color: var(--muted);
+      }
+
+      .viewer {
+        margin-top: 1rem;
+        background: #000;
+        border-radius: 14px;
+        overflow: hidden;
+        border: 1px solid #2c3255;
+        position: relative;
+        user-select: none;
+        touch-action: none;
+      }
+
+      canvas {
+        display: block;
+        width: 100%;
+        aspect-ratio: 16 / 9;
+        background: #050505;
+      }
+
+      .hud {
+        position: absolute;
+        inset: auto 0 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1rem;
+        padding: 0.75rem 0.95rem;
+        background: linear-gradient(transparent, rgba(0, 0, 0, 0.65));
+        font-size: 0.9rem;
+      }
+
+      .progress {
+        flex: 1;
+        height: 6px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.12);
+        overflow: hidden;
+      }
+
+      .progress > span {
+        display: block;
+        height: 100%;
+        background: linear-gradient(90deg, #5f87ff, #7cc4ff);
+        width: 0%;
+      }
+
+      .help {
+        margin-top: 0.9rem;
+        font-size: 0.92rem;
+        color: var(--muted);
+      }
+
+      .kbd {
+        border: 1px solid #495486;
+        background: #1e2441;
+        border-radius: 6px;
+        padding: 0.08rem 0.4rem;
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        color: #dbe4ff;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="container">
+      <h1>Image Sequence Scrubbing</h1>
+      <p>Arrastra horizontalmente (mouse o touch) para avanzar o retroceder fotogramas.</p>
+
+      <section class="viewer" id="viewer" aria-label="Visor de secuencia de imágenes">
+        <canvas id="canvas" width="1280" height="720"></canvas>
+        <div class="hud">
+          <span id="frameLabel">Frame 1 / 120</span>
+          <div class="progress"><span id="progressBar"></span></div>
+          <span id="percentLabel">0%</span>
+        </div>
+      </section>
+
+      <p class="help">Tip: también puedes usar <span class="kbd">←</span> y <span class="kbd">→</span>.</p>
+    </main>
+
+    <script>
+      const FRAME_COUNT = 120;
+      const viewer = document.getElementById('viewer');
+      const canvas = document.getElementById('canvas');
+      const ctx = canvas.getContext('2d');
+      const frameLabel = document.getElementById('frameLabel');
+      const percentLabel = document.getElementById('percentLabel');
+      const progressBar = document.getElementById('progressBar');
+
+      let currentFrame = 0;
+      let isDragging = false;
+      let startX = 0;
+      let startFrame = 0;
+
+      function drawFrame(index) {
+        const t = index / (FRAME_COUNT - 1);
+        const w = canvas.width;
+        const h = canvas.height;
+
+        const grad = ctx.createLinearGradient(0, 0, w, h);
+        grad.addColorStop(0, `hsl(${220 + t * 120} 85% 56%)`);
+        grad.addColorStop(1, `hsl(${300 - t * 140} 88% 46%)`);
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, w, h);
+
+        const orbX = 140 + t * (w - 280);
+        const orbY = h / 2 + Math.sin(t * Math.PI * 4) * 120;
+        const orbSize = 120 + Math.cos(t * Math.PI * 2) * 32;
+
+        ctx.beginPath();
+        ctx.fillStyle = 'rgba(255,255,255,0.9)';
+        ctx.arc(orbX, orbY, orbSize, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = 'rgba(0,0,0,0.38)';
+        ctx.fillRect(0, h - 120, w, 120);
+
+        ctx.fillStyle = '#fff';
+        ctx.font = '700 64px Inter, sans-serif';
+        ctx.fillText(`FRAME ${String(index + 1).padStart(3, '0')}`, 36, h - 44);
+
+        const percent = Math.round((index / (FRAME_COUNT - 1)) * 100);
+        frameLabel.textContent = `Frame ${index + 1} / ${FRAME_COUNT}`;
+        percentLabel.textContent = `${percent}%`;
+        progressBar.style.width = `${percent}%`;
+      }
+
+      function setFrame(index) {
+        currentFrame = Math.max(0, Math.min(FRAME_COUNT - 1, index));
+        drawFrame(currentFrame);
+      }
+
+      function startDrag(clientX) {
+        isDragging = true;
+        startX = clientX;
+        startFrame = currentFrame;
+      }
+
+      function scrub(clientX) {
+        if (!isDragging) return;
+        const dx = clientX - startX;
+        const frameDelta = Math.round(dx / 5);
+        setFrame(startFrame + frameDelta);
+      }
+
+      viewer.addEventListener('pointerdown', (event) => {
+        viewer.setPointerCapture(event.pointerId);
+        startDrag(event.clientX);
+      });
+
+      viewer.addEventListener('pointermove', (event) => scrub(event.clientX));
+      viewer.addEventListener('pointerup', () => (isDragging = false));
+      viewer.addEventListener('pointercancel', () => (isDragging = false));
+
+      window.addEventListener('keydown', (event) => {
+        if (event.key === 'ArrowRight') setFrame(currentFrame + 1);
+        if (event.key === 'ArrowLeft') setFrame(currentFrame - 1);
+      });
+
+      setFrame(0);
+    </script>
+  </body>
+</html>
